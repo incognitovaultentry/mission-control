@@ -1,12 +1,7 @@
-import {
-  convexAuthNextjsMiddleware,
-} from "@convex-dev/auth/nextjs/server";
-
-export default convexAuthNextjsMiddleware((_request, _ctx) => {
-  // Let each page handle its own auth gate
-  return;
-});
+// Auth is handled client-side via useConvexAuth() in each page.
+// This middleware is a no-op placeholder for future use.
+export default function middleware() {}
 
 export const config = {
-  matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
+  matcher: [],
 };
