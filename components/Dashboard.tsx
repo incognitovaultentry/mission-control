@@ -1,13 +1,13 @@
 "use client";
 
-import { useConvexAuth, useQuery } from "convex/react";
-import { useAuthActions } from "@convex-dev/auth/react";
+import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { formatDistanceToNow, format } from "date-fns";
 import {
-  Activity, CheckCircle, XCircle, Zap, Users, LogOut, Github, X, Clock, AlertCircle,
+  Activity, CheckCircle, XCircle, Zap, Users, X, Clock, AlertCircle, Link as LinkIcon,
 } from "lucide-react";
+import Link from "next/link";
 import clsx from "clsx";
 import { useState } from "react";
 
@@ -36,19 +36,15 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function TaskBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    completed: "text-emerald-400",
-    failed: "text-red-400",
-    running: "text-blue-400",
+  const styles: Record<string, { icon: React.ReactNode; cls: string }> = {
+    completed: { icon: <CheckCircle size={12} />, cls: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" },
+    failed: { icon: <XCircle size={12} />, cls: "text-red-400 bg-red-500/10 border-red-500/20" },
+    running: { icon: <Activity size={12} className="animate-pulse" />, cls: "text-blue-400 bg-blue-500/10 border-blue-500/20" },
   };
-  const icons: Record<string, React.ReactNode> = {
-    completed: <CheckCircle size={12} />,
-    failed: <XCircle size={12} />,
-    running: <Activity size={12} className="animate-pulse" />,
-  };
+  const s = styles[status] ?? { icon: null, cls: "text-gray-400 bg-gray-500/10 border-gray-500/20" };
   return (
-    <span className={clsx("inline-flex items-center gap-1 text-xs", styles[status] ?? "text-gray-400")}>
-      {icons[status]}
+    <span className={clsx("inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border font-medium", s.cls)}>
+      {s.icon}
       <span className="capitalize">{status}</span>
     </span>
   );
@@ -73,7 +69,6 @@ function AgentPanel({ agentId, onClose }: { agentId: Id<"agents">; onClose: () =
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className="w-full max-w-lg bg-[#0d0d14] border-l border-[#1e1e2e] flex flex-col overflow-hidden">
-        {/* Header */}
         <div className="px-5 py-4 border-b border-[#1e1e2e] flex items-center justify-between">
           <div>
             <div className="font-semibold">{agent.name}</div>
@@ -87,7 +82,6 @@ function AgentPanel({ agentId, onClose }: { agentId: Id<"agents">; onClose: () =
           </div>
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-3 gap-3 px-5 py-4 border-b border-[#1e1e2e]">
           {[
             { label: "Total Tasks", value: stats?.total ?? 0 },
@@ -102,7 +96,6 @@ function AgentPanel({ agentId, onClose }: { agentId: Id<"agents">; onClose: () =
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {/* Recent Tasks */}
           <div className="px-5 py-4 border-b border-[#1e1e2e]">
             <h3 className="text-xs font-medium text-gray-400 mb-3">Recent Tasks</h3>
             {!tasks || tasks.length === 0 ? (
@@ -138,7 +131,6 @@ function AgentPanel({ agentId, onClose }: { agentId: Id<"agents">; onClose: () =
             )}
           </div>
 
-          {/* Logs */}
           <div className="px-5 py-4">
             <h3 className="text-xs font-medium text-gray-400 mb-3">Activity Log</h3>
             {!logs || logs.length === 0 ? (
@@ -164,60 +156,26 @@ function AgentPanel({ agentId, onClose }: { agentId: Id<"agents">; onClose: () =
 }
 
 export default function Dashboard() {
-  const { isAuthenticated, isLoading } = useConvexAuth();
-  const { signIn, signOut } = useAuthActions();
   const [selectedAgent, setSelectedAgent] = useState<Id<"agents"> | null>(null);
 
   const stats = useQuery(api.tasks.getGlobalStats);
   const agents = useQuery(api.agents.listAgents);
   const logs = useQuery(api.logs.listLogs, { limit: 40 });
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0f]">
-        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-6 bg-[#0a0a0f]">
-        <div className="flex items-center gap-2 text-2xl font-bold">
-          <Zap className="text-yellow-400" size={28} />
-          Mission Control
-        </div>
-        <p className="text-gray-500 text-sm">Sign in to monitor your AI agents</p>
-        <button
-          onClick={() => void signIn("github")}
-          className="flex items-center gap-2 bg-white text-black px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors"
-        >
-          <Github size={18} />
-          Sign in with GitHub
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
-      {/* Nav */}
       <nav className="border-b border-[#1e1e2e] px-6 py-4 flex items-center justify-between sticky top-0 bg-[#0a0a0f]/90 backdrop-blur-sm z-10">
         <div className="flex items-center gap-2 font-bold text-base">
           <Zap className="text-yellow-400" size={18} />
           Mission Control
         </div>
-        <button
-          onClick={() => void signOut()}
-          className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-white transition-colors"
-        >
-          <LogOut size={14} />
-          Sign out
-        </button>
+        <Link href="/tasks" className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors">
+          <LinkIcon size={12} />
+          All Tasks
+        </Link>
       </nav>
 
       <main className="px-6 py-6 max-w-7xl mx-auto">
-        {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           {[
             { label: "Total Agents", value: stats?.totalAgents ?? 0, icon: Users, color: "text-blue-400", bg: "bg-blue-500/10" },
@@ -238,7 +196,6 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Agents Grid */}
           <div className="lg:col-span-2">
             <h2 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Agents</h2>
             {(!agents || agents.length === 0) ? (
@@ -272,7 +229,6 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* Live Activity Feed */}
           <div>
             <h2 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Live Activity</h2>
             <div className="bg-[#111118] border border-[#1e1e2e] rounded-xl p-4 h-[400px] overflow-y-auto">
@@ -296,7 +252,6 @@ export default function Dashboard() {
         </div>
       </main>
 
-      {/* Agent Detail Panel */}
       {selectedAgent && (
         <AgentPanel agentId={selectedAgent} onClose={() => setSelectedAgent(null)} />
       )}

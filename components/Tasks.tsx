@@ -1,6 +1,6 @@
 "use client";
 
-import { useConvexAuth, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { formatDistanceToNow } from "date-fns";
 import { CheckCircle, XCircle, Activity, Clock, ArrowLeft } from "lucide-react";
@@ -25,29 +25,12 @@ function TaskBadge({ status }: { status: string }) {
   );
 }
 
-export default function TasksPage() {
-  const { isAuthenticated, isLoading } = useConvexAuth();
+export default function Tasks() {
   const [activeTab, setActiveTab] = useState<TabStatus>("all");
   const tasks = useQuery(api.tasks.listTasks, { status: activeTab });
   const agents = useQuery(api.agents.listAgents);
 
   const agentMap = new Map(agents?.map((a) => [a._id, a.name]) ?? []);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0f]">
-        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0f]">
-        <Link href="/" className="text-blue-400 hover:text-blue-300 text-sm">← Back to sign in</Link>
-      </div>
-    );
-  }
 
   const tabs: { label: string; value: TabStatus }[] = [
     { label: "All", value: "all" },
@@ -66,7 +49,6 @@ export default function TasksPage() {
       </nav>
 
       <main className="px-6 py-6 max-w-5xl mx-auto">
-        {/* Tabs */}
         <div className="flex gap-1 bg-[#111118] border border-[#1e1e2e] rounded-lg p-1 w-fit mb-5">
           {tabs.map((tab) => (
             <button
@@ -74,9 +56,7 @@ export default function TasksPage() {
               onClick={() => setActiveTab(tab.value)}
               className={clsx(
                 "px-4 py-1.5 rounded-md text-sm font-medium transition-all",
-                activeTab === tab.value
-                  ? "bg-[#1e1e2e] text-white"
-                  : "text-gray-500 hover:text-gray-300"
+                activeTab === tab.value ? "bg-[#1e1e2e] text-white" : "text-gray-500 hover:text-gray-300"
               )}
             >
               {tab.label}
@@ -84,7 +64,6 @@ export default function TasksPage() {
           ))}
         </div>
 
-        {/* Table */}
         <div className="bg-[#111118] border border-[#1e1e2e] rounded-xl overflow-hidden">
           {!tasks || tasks.length === 0 ? (
             <div className="text-center py-16 text-gray-600 text-sm">No tasks found</div>
@@ -114,10 +93,8 @@ export default function TasksPage() {
                     </td>
                     <td className="px-4 py-3 text-xs text-gray-500">
                       {task.durationMs
-                        ? task.durationMs < 1000
-                          ? `${task.durationMs}ms`
-                          : `${(task.durationMs / 1000).toFixed(1)}s`
-                        : task.status === "running" ? "—" : "—"}
+                        ? task.durationMs < 1000 ? `${task.durationMs}ms` : `${(task.durationMs / 1000).toFixed(1)}s`
+                        : "—"}
                     </td>
                   </tr>
                 ))}
