@@ -88,4 +88,41 @@ http.route({
   }),
 });
 
+// POST /api/kanban/card — create a card (agents can use this)
+// Body: { title, description?, status?, priority?, assignedAgent?, tags? }
+http.route({
+  path: "/api/kanban/card",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    if (!checkApiKey(request)) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+    const body = await request.json();
+    const id = await ctx.runMutation(api.kanban.createCard, {
+      title: body.title,
+      description: body.description,
+      status: body.status ?? "open",
+      priority: body.priority ?? "medium",
+      assignedAgent: body.assignedAgent,
+      tags: body.tags,
+    });
+    return Response.json({ id });
+  }),
+});
+
+// PATCH /api/kanban/card — move/update a card
+// Body: { id, status?, title?, description?, priority? }
+http.route({
+  path: "/api/kanban/card",
+  method: "PATCH",
+  handler: httpAction(async (ctx, request) => {
+    if (!checkApiKey(request)) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+    const body = await request.json();
+    await ctx.runMutation(api.kanban.updateCard, body);
+    return new Response("ok", { status: 200 });
+  }),
+});
+
 export default http;

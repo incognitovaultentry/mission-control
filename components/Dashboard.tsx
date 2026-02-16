@@ -5,7 +5,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { formatDistanceToNow, format } from "date-fns";
 import {
-  Activity, CheckCircle, XCircle, Zap, Users, X, Clock, AlertCircle, Link as LinkIcon,
+  Activity, CheckCircle, XCircle, Zap, Users, X, Clock, AlertCircle, Link as LinkIcon, LayoutDashboard,
 } from "lucide-react";
 import Link from "next/link";
 import clsx from "clsx";
@@ -169,10 +169,16 @@ export default function Dashboard() {
           <Zap className="text-yellow-400" size={18} />
           Mission Control
         </div>
-        <Link href="/tasks" className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors">
-          <LinkIcon size={12} />
-          All Tasks
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href="/kanban" className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors">
+            <LayoutDashboard size={12} />
+            Kanban
+          </Link>
+          <Link href="/tasks" className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors">
+            <LinkIcon size={12} />
+            Tasks
+          </Link>
+        </div>
       </nav>
 
       <main className="px-6 py-6 max-w-7xl mx-auto">

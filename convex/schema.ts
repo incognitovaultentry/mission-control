@@ -28,4 +28,19 @@ export default defineSchema({
     message: v.string(),
     timestamp: v.number(),
   }).index("by_agent", ["agentId"]).index("by_task", ["taskId"]),
+  kanbanCards: defineTable({
+    title: v.string(),
+    description: v.optional(v.string()),
+    status: v.union(
+      v.literal("open"),
+      v.literal("inprogress"),
+      v.literal("review"),
+      v.literal("done")
+    ),
+    priority: v.union(v.literal("low"), v.literal("medium"), v.literal("high")),
+    assignedAgent: v.optional(v.string()),
+    tags: v.optional(v.array(v.string())),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_status", ["status"]),
 });
